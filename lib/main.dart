@@ -1,7 +1,6 @@
-import 'package:douban/moviePage.dart';
 import 'package:flutter/material.dart';
-import 'moviePage.dart';
-import 'homePage.dart';
+import 'home/homePage.dart';
+import 'movie/moviePage.dart';
 
 void main() => runApp(MyApp());
 

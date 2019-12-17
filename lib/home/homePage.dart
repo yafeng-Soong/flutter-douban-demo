@@ -18,7 +18,10 @@ class _HomePageState extends State<HomePage> {
               height: 35,
               child: TextField(
                 decoration: InputDecoration(
-                    fillColor: Colors.white70,
+                    fillColor: Colors.white,
+                    hintStyle: TextStyle(
+                      color: Colors.grey
+                    ),
                     hintText: '我与哲学家们的二三事',
                     filled: true,
                     prefixIcon: Icon(Icons.search),

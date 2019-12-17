@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'api.dart';
-import 'hotMovies.dart';
+import '../api.dart';
+class HotTab extends StatefulWidget {
+  HotTab({Key key, this.tag = '热门'}) : super(key: key);
 
-Dio dio = new Dio();
-
-class MovieTab extends StatefulWidget {
-  MovieTab({Key key}) : super(key: key);
+  final String tag;
 
   @override
-  _MovieTabState createState() => _MovieTabState();
+  _HotTabState createState() => _HotTabState();
 }
 
-// 为保证作为tabBarView被切换后不会保持数据要混合AutomaticKeepAliveClientMixin
-class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
+class _HotTabState extends State<HotTab> {
   List subjects = [];
 
   getData() async {
@@ -34,18 +31,18 @@ class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
   @override
   void initState() {
     super.initState();
-    // getData();
+    getData();
   }
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Container(
-      child: HotTab()
+      height: 420,
+      child: getListViewContainer(),
     );
   }
 
   getListViewContainer() {
-    if (subjects.length == 0) 
+    if (subjects.length == 0)
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -57,10 +54,11 @@ class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
         ],
       );
     return GridView.builder(
+      // shrinkWrap: true,
       itemCount: subjects.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3, //每行三列
-          childAspectRatio: 0.63 //显示区域宽高相等
+          childAspectRatio: 0.61 //显示区域宽高相等
       ),
       itemBuilder: (BuildContext context, int index){
         return getItemViewContainer(subjects[index]);
@@ -71,7 +69,7 @@ class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
   getItemViewContainer(subject) {
     String imgUrl = subject['cover'];
     return Container(
-      margin: EdgeInsets.only(top: 16.0, left: 8.0, right: 8.0),
+      margin: EdgeInsets.only(top: 16.0, right: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -86,20 +84,20 @@ class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
     return Container(
       alignment: Alignment.topLeft,
       decoration: BoxDecoration(
-        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
-        borderRadius: BorderRadius.all(Radius.circular(5.0))
+          image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
+          borderRadius: BorderRadius.all(Radius.circular(5.0))
       ),
-      height: 160,
+      height: 150,
       // width: 160,
       child: Opacity(
-        opacity: 0.7,
+        opacity: 0.8,
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.grey,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(5.0),
-              bottomRight: Radius.circular(5.0)
-            )
+              color: Colors.grey,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(5.0),
+                  bottomRight: Radius.circular(5.0)
+              )
           ),
           child: Icon(
             Icons.add_circle_outline,
@@ -114,20 +112,20 @@ class _MovieTabState extends State<MovieTab> with AutomaticKeepAliveClientMixin{
     String title = subject['title'];
     double rate = double.parse(subject['rate']);
     return Container(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
-            overflow: TextOverflow.ellipsis,
-          ),
-          RateBar(rate)
-        ],
-      )
+            RateBar(rate)
+          ],
+        )
     );
   }
 
@@ -180,8 +178,8 @@ class RateBar extends StatelessWidget {
     startList.add(Text(
       '$stars',
       style: TextStyle(
-        color: Colors.grey,
-        fontSize: 12
+          color: Colors.grey,
+          fontSize: 12
       ),
     ));
     return Container(
