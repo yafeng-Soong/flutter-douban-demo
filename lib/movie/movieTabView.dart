@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../api.dart';
-class HotTab extends StatefulWidget {
-  HotTab({Key key, this.tag = '热门'}) : super(key: key);
+class MovieTabView extends StatefulWidget {
+  MovieTabView({Key key, this.tags}) :assert(tags != null), super(key: key);
 
-  final String tag;
+  final String tags;
 
   @override
-  _HotTabState createState() => _HotTabState();
+  _MovieTabViewState createState() => _MovieTabViewState();
 }
 
-class _HotTabState extends State<HotTab> {
+class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClientMixin{
   List subjects = [];
 
   getData() async {
     try {
-      Response res = await DouBanApi.getHotMovie();
+      Response res = await DouBanApi.getMovieByTags(widget.tags);
       setState(() {
         subjects = res.data['subjects'];
       });
@@ -27,7 +27,7 @@ class _HotTabState extends State<HotTab> {
       print(error);
     }
   }
-
+  
   @override
   void initState() {
     super.initState();
@@ -35,8 +35,9 @@ class _HotTabState extends State<HotTab> {
   }
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
-      height: 420,
+      // height: 420,
       child: getListViewContainer(),
     );
   }

@@ -40,6 +40,10 @@ class DouBanApi {
     Params params = Params('movie', '最新');
     return DioManager.getInstance().get(params);
   }
+  static getMovieByTags(String tags, {int limit, int start}){
+    Params params = Params('movie', tags);
+    return DioManager.getInstance().get(params);
+  }
 }
 
 class Params {
