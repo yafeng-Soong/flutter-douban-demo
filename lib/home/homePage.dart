@@ -69,6 +69,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+          body: TabBarView(
+            children: <Widget>[
+              Center(child: Text('动态'),),
+              Center(child: Text('推荐'),)
+            ],
+          ),
         )
     );
   }

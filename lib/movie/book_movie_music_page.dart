@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'movieTab.dart';
+import 'movie_tab_view.dart';
 
 class MoviePage extends StatefulWidget {
   @override
@@ -65,7 +65,8 @@ class _MoviePageState extends State<MoviePage> {
         ),
         body: TabBarView(
           children: <Widget>[
-            MovieTab(),
+            MovieTabView(),
+            // MovieTab(tagList: ['热门', '最新', '冷门佳片', '华语']),
             Center(child: Text('电视'),),
             Center(child: Text('读书'),),
             Center(child: Text('原创小说'),),

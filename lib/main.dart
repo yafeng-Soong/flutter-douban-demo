@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home/homePage.dart';
-import 'movie/moviePage.dart';
+import 'movie/book_movie_music_page.dart';
 
 void main() => runApp(MyApp());
 
@@ -16,8 +16,16 @@ class _MyAppState extends State<MyApp> {
   List<Widget> _pages = [
     HomePage(),
     MoviePage(),
-    Center(child: Text('设置'),),
+    Center(child: Text('小组'),),
+    Center(child: Text('市集'),),
     Center(child: Text('我的'),)
+  ];
+  List<_bottomBar> _bars = [
+    _bottomBar('主页', 'assets/images/home.png', 'assets/images/home_active.png'),
+    _bottomBar('书影音', 'assets/images/book_movie_music.png', 'assets/images/book_movie_music_active.png'),
+    _bottomBar('小组', 'assets/images/group.png', 'assets/images/group_active.png'),
+    _bottomBar('市集', 'assets/images/market.png', 'assets/images/market_active.png'),
+    _bottomBar('我的', 'assets/images/person.png', 'assets/images/person_active.png'),
   ];
 
   _changeState(int index) {
@@ -50,29 +58,34 @@ class _MyAppState extends State<MyApp> {
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           elevation: 8.0,
-          items: <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              title: Text('首页')
+          items: _bars.map((item) => BottomNavigationBarItem(
+            icon: Image.asset(
+              item.normal,
+              height: 30,
+              width: 30,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.movie_filter),
-              title: Text('书影音')
+            title: Text(
+              item.name,
+              style: TextStyle(fontSize: 12),
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              title: Text('设置')
+            activeIcon: Image.asset(
+              item.active,
+              height: 30,
+              width: 30,
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.account_circle),
-              title: Text('我的')
-            ),
-          ],
+          )).toList(),
           currentIndex: _index,
           onTap: _changeState,
         ),
       )
     );
   }
+}
+
+class _bottomBar {
+  String name;
+  String normal;
+  String active;
+  _bottomBar(this.name, this.normal, this.active);
 }
 

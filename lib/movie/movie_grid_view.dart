@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../api.dart';
-class MovieTabView extends StatefulWidget {
-  MovieTabView({Key key, this.tags}) :assert(tags != null), super(key: key);
+import '../v2api.dart';
+import '../common/rating_bar.dart';
+class MovieGridView extends StatefulWidget {
+  MovieGridView({Key key, this.tags, this.v2 = false}) :assert(tags != null), super(key: key);
 
   final String tags;
+  final bool v2;
 
   @override
-  _MovieTabViewState createState() => _MovieTabViewState();
+  _MovieGridViewState createState() => _MovieGridViewState();
 }
 
-class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClientMixin{
+class _MovieGridViewState extends State<MovieGridView> with AutomaticKeepAliveClientMixin{
   List subjects = [];
+  int total;
+  bool v2 = false;
 
   getData() async {
     try {
-      Response res = await DouBanApi.getMovieByTags(widget.tags);
+      Response res;
+      if (!v2)
+        res = await DouBanApi.getMovieByTags(widget.tags);
+      else
+        res = await V2Api.getMovieByTag(widget.tags);
       setState(() {
         subjects = res.data['subjects'];
       });
@@ -24,6 +33,7 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
       }
     }on DioError catch (error) {
       print('网络异常');
+      print(error.message);
       print(error);
     }
   }
@@ -31,13 +41,15 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
   @override
   void initState() {
     super.initState();
+    v2 = widget.v2;
     getData();
   }
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return Container(
-      // height: 420,
+      margin: EdgeInsets.only(top: 16.0),
+      height: 420,
       child: getListViewContainer(),
     );
   }
@@ -55,11 +67,13 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
         ],
       );
     return GridView.builder(
-      // shrinkWrap: true,
+      shrinkWrap: true, // 根据子组件总长度来设置GridView长度
+      physics: NeverScrollableScrollPhysics(),
       itemCount: subjects.length,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, //每行三列
-          childAspectRatio: 0.61 //显示区域宽高相等
+        crossAxisSpacing: 12,
+        crossAxisCount: 3, //每行三列
+        childAspectRatio: widget.tags == '即将上映'? 0.53: 0.55 //显示区域宽高相等
       ),
       itemBuilder: (BuildContext context, int index){
         return getItemViewContainer(subjects[index]);
@@ -68,9 +82,9 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
   }
 
   getItemViewContainer(subject) {
-    String imgUrl = subject['cover'];
+    String imgUrl = v2? subject['images']['small']: subject['cover'];
     return Container(
-      margin: EdgeInsets.only(top: 16.0, right: 12.0),
+      // margin: EdgeInsets.only(top: 10.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -88,7 +102,7 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
           image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
           borderRadius: BorderRadius.all(Radius.circular(5.0))
       ),
-      height: 150,
+      height: 160,
       // width: 160,
       child: Opacity(
         opacity: 0.8,
@@ -111,7 +125,17 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
 
   getMovieInfoView(Map subject){
     String title = subject['title'];
-    double rate = double.parse(subject['rate']);
+    double rate;
+    String pubdate;
+    int collectCount;
+    if (v2)
+      rate = subject['rating']['average'] == 0? 0.0: subject['rating']['average'];
+    else 
+      rate = double.parse(subject['rate']);
+    if (widget.tags == '即将上映') {
+      pubdate = subject['mainland_pubdate'];
+      collectCount = subject['collect_count'];
+    }
     return Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +148,7 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
               ),
               overflow: TextOverflow.ellipsis,
             ),
-            RateBar(rate)
+            _getBottomWidget(rate, pubdate: pubdate, collecctCount: collectCount)
           ],
         )
     );
@@ -132,62 +156,30 @@ class _MovieTabViewState extends State<MovieTabView> with AutomaticKeepAliveClie
 
   @override
   bool get wantKeepAlive => true;
-}
 
-class RateBar extends StatelessWidget {
-  final double stars;
-
-  RateBar(this.stars);
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> startList = [];
-    //实心星星
-    var startNumber = stars ~/ 2;
-    //半实心星星
-    var startHalf = 0;
-    if (stars.toString().contains('.')) {
-      int tmp = int.parse((stars.toString().split('.')[1]));
-      if (tmp >= 5) {
-        startHalf = 1;
-      }
-    }
-    //空心星星
-    var startEmpty = 5 - startNumber - startHalf;
-
-    for (var i = 0; i < startNumber; i++) {
-      startList.add(Icon(
-        Icons.star,
-        color: Colors.deepOrangeAccent,
-        size: 14,
-      ));
-    }
-    if (startHalf > 0) {
-      startList.add(Icon(
-        Icons.star_half,
-        color: Colors.deepOrangeAccent,
-        size: 14,
-      ));
-    }
-    for (var i = 0; i < startEmpty; i++) {
-      startList.add(Icon(
-        Icons.star_border,
-        color: Colors.grey,
-        size: 14,
-      ));
-    }
-    startList.add(Text(
-      '$stars',
-      style: TextStyle(
-          color: Colors.grey,
-          fontSize: 12
-      ),
-    ));
-    return Container(
-      alignment: Alignment.topLeft,
-      child: Row(
-        children: startList,
-      ),
-    );
+  _getBottomWidget(double rate, {String pubdate, int collecctCount}){
+    if (pubdate != null){
+      pubdate = pubdate.replaceFirst('-', '*');
+      pubdate = pubdate.split('*')[1];
+      pubdate = pubdate.replaceFirst('-', '月');
+      pubdate = pubdate + '日';
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('${collecctCount}人想看', style: TextStyle(fontSize: 10, color: Colors.grey),),
+          Container(
+            padding: EdgeInsets.only(left: 2.0, right: 2.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red, width: 1.0),
+              borderRadius: BorderRadius.circular(2.0)
+            ),
+            child: Text(pubdate, style: TextStyle(fontSize: 9, color: Colors.red))
+          )
+        ],
+      );
+      
+    }else if (rate == 0.0)
+      return Text('暂无评分', style: TextStyle(fontSize: 11));
+    else return RatingBar(rate);
   }
 }
